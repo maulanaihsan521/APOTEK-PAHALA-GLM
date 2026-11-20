@@ -1,0 +1,4 @@
+tanggal,kode_obat,nama_obat,jumlah,harga_satuan,mutasi
+2026-11-21,P001,Paracetamol 500mg,25,18000,P
+2026-11-21,A001,Amoxicillin 500mg,10,32000,P
+2026-11-21,N001,Antasida Doen,-2,9000,R

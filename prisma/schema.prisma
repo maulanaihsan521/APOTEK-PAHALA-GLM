@@ -1,0 +1,238 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============ AUTH & ROLES ============
+
+model Role {
+  id          String @id @default(cuid())
+  name        String @unique // Admin | Petugas
+  description String
+  users       User[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  name         String
+  passwordHash String
+  roleId       String
+  role         Role     @relation(fields: [roleId], references: [id])
+  isActive     Boolean  @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ============ MASTER DATA ============
+
+model Medicine {
+  id         String   @id @default(cuid())
+  code       String   @unique // kode barang (BL_KODEBR)
+  name       String
+  category   String
+  unit       String   // Strip / Botol / Box
+  basePrice  Int      // harga jual rata-rata per unit (Rp)
+  minStock   Int      // stok minimum (batas perlu perhatian)
+  buyUnit    Int      @default(1) // satuan pembelian (pembulatan)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  sales          Sale[]
+  inventory      Inventory?
+  movements      InventoryMovement[]
+  predictionRuns PredictionRun[]
+  evaluations    ModelEvaluation[]
+  testPredictions TestPrediction[]
+  procurementItems ProcurementItem[]
+}
+
+// ============ TRANSAKSI PENJUALAN (BL) ============
+
+model Sale {
+  id         String   @id @default(cuid())
+  date       DateTime
+  medicineId String
+  medicine   Medicine @relation(fields: [medicineId], references: [id])
+  quantity   Int      // kuantitas; negatif = retur (mutasi R)
+  unitPrice  Int
+  totalPrice Int
+  mutation   String   @default("P") // P = penjualan, R = retur
+  note       String?
+  source     String   @default("DEMO") // DEMO | MANUAL | IMPORT
+  createdBy  String?
+  createdAt  DateTime @default(now())
+
+  @@index([date])
+  @@index([medicineId, date])
+}
+
+// ============ DATA CUACA (NASA POWER MERRA-2) ============
+
+model WeatherData {
+  id         String   @id @default(cuid())
+  date       DateTime @unique
+  temperature Float   // suhu rata-rata harian (C)
+  rainfall    Float   // curah hujan harian (mm)
+  humidity    Float   // kelembapan relatif (%)
+  source     String   @default("NASA POWER MERRA-2")
+  createdAt  DateTime @default(now())
+
+  @@index([date])
+}
+
+// ============ STOK ============
+
+model Inventory {
+  id           String    @id @default(cuid())
+  medicineId   String    @unique
+  medicine     Medicine  @relation(fields: [medicineId], references: [id])
+  stockSystem  Int       // ST_PC - stok menurut sistem
+  stockPhysical Int      // ST_PHISIC - stok fisik stock opname
+  lastOpnameAt DateTime?
+  updatedAt    DateTime  @updatedAt
+}
+
+model InventoryMovement {
+  id           String   @id @default(cuid())
+  medicineId   String
+  medicine     Medicine @relation(fields: [medicineId], references: [id])
+  date         DateTime
+  type         String   // PENJUALAN | PENERIMAAN | PENYESUAIAN | OPNAME
+  beforeSystem Int
+  afterSystem  Int
+  userName     String
+  note         String?
+  createdAt    DateTime @default(now())
+
+  @@index([medicineId, date])
+}
+
+// ============ MACHINE LEARNING ============
+
+model PredictionRun {
+  id            String    @id @default(cuid())
+  medicineId    String
+  medicine      Medicine  @relation(fields: [medicineId], references: [id])
+  modelName     String    @default("Random Forest Regression")
+  periodWeeks   Int
+  startDate     DateTime
+  status        String    @default("SELESAI") // SELESAI | GAGAL | BERJALAN
+  avgDemand     Float?
+  nextWeekDemand Float?
+  trend         String? // NAIK | TURUN | STABIL
+  mae           Float?
+  rmse          Float?
+  mape          Float?
+  featureNote   String?
+  scenarioNote  String?
+  createdBy     String?
+  createdAt     DateTime  @default(now())
+
+  results PredictionResult[]
+
+  @@index([medicineId, createdAt])
+}
+
+model PredictionResult {
+  id         String        @id @default(cuid())
+  runId      String
+  run        PredictionRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  weekNumber Int
+  weekStart  DateTime
+  predicted  Float
+}
+
+model ModelEvaluation {
+  id           String    @id @default(cuid())
+  medicineId   String
+  medicine     Medicine  @relation(fields: [medicineId], references: [id])
+  modelName    String // Random Forest Regression | Decision Tree Regression | Linear Regression | Naif
+  mae          Float
+  rmse         Float
+  mape         Float
+  trainWeeks   Int
+  testWeeks    Int
+  weatherUsed  Boolean   @default(true)
+  nEstimators  Int?
+  maxDepth     Int?
+  params       String? // JSON parameter model
+  trainedAt    DateTime  @default(now())
+
+  @@index([medicineId, modelName])
+}
+
+// Prediksi model pada data uji per pekan (untuk grafik aktual vs prediksi)
+model TestPrediction {
+  id         String   @id @default(cuid())
+  medicineId String
+  medicine   Medicine @relation(fields: [medicineId], references: [id])
+  modelName  String
+  weekStart  DateTime
+  actual     Float
+  predicted  Float
+
+  @@index([medicineId, modelName, weekStart])
+}
+
+// ============ REKOMENDASI PENGADAAN ============
+
+model ProcurementRecommendation {
+  id              String   @id @default(cuid())
+  code            String   @unique // RCM-20261120-001
+  periodWeeks     Int      @default(4)
+  status          String   @default("DRAFT") // DRAFT | DISETPUJUI | DIBATALKAN
+  totalAmount     Int
+  safetyWeeks     Float
+  coverageNote    String?
+  createdBy       String?
+  createdAt       DateTime @default(now())
+  decidedAt       DateTime?
+
+  items ProcurementItem[]
+}
+
+model ProcurementItem {
+  id               String    @id @default(cuid())
+  recommendationId String
+  recommendation   ProcurementRecommendation @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  medicineId       String
+  medicine         Medicine  @relation(fields: [medicineId], references: [id])
+  currentStock     Int
+  forecastDemand   Float
+  minStock         Int
+  safetyStock      Float
+  recommendedQty   Int
+  adjustedQty      Int?
+  reason           String?
+  urgency          String // RENDAH | SEDANG | TINGGI | KRITIS
+  unitPrice        Int
+  lineTotal        Int
+
+  @@index([recommendationId])
+}
+
+// ============ PENGATURAN & AKTIVITAS ============
+
+model ApplicationSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userName  String
+  type      String // DATA_PENJUALAN | STOK | PREDIKSI | REKOMENDASI | MODEL | SISTEM | IMPORT | LAPORAN
+  message   String
+  objectRef String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}

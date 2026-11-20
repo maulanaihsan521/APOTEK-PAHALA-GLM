@@ -1,0 +1,176 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-info: var(--info);
+  --color-violet-brand: var(--violet-brand);
+  --color-teal-brand: var(--teal-brand);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --radius: 0.75rem;
+  /* Palet brand Apotek Pahala */
+  --background: #F5F8FA;
+  --foreground: #18343D;
+  --card: #FFFFFF;
+  --card-foreground: #18343D;
+  --popover: #FFFFFF;
+  --popover-foreground: #18343D;
+  --primary: #087F6B;
+  --primary-foreground: #FFFFFF;
+  --secondary: #E3EBEF;
+  --secondary-foreground: #0B5F52;
+  --muted: #EEF3F6;
+  --muted-foreground: #718096;
+  --accent: #E6F4EF;
+  --accent-foreground: #0B5F52;
+  --destructive: #E55353;
+  --border: #E3EBEF;
+  --input: #DCE6EC;
+  --ring: #087F6B;
+  --chart-1: #087F6B;
+  --chart-2: #5BD0A9;
+  --chart-3: #F2A93B;
+  --chart-4: #3985D6;
+  --chart-5: #8B5CF6;
+  --sidebar: #0B5F52;
+  --sidebar-foreground: #CFE7DF;
+  --sidebar-primary: #20B58A;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #0D7A69;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgba(255, 255, 255, 0.14);
+  --sidebar-ring: #20B58A;
+  --success: #16A36A;
+  --warning: #F2A93B;
+  --danger: #E55353;
+  --info: #3985D6;
+  --violet-brand: #8B5CF6;
+  --teal-brand: #20B58A;
+}
+
+.dark {
+  --background: #0D1B21;
+  --foreground: #E7EFF2;
+  --card: #142830;
+  --card-foreground: #E7EFF2;
+  --popover: #142830;
+  --popover-foreground: #E7EFF2;
+  --primary: #20B58A;
+  --primary-foreground: #05261F;
+  --secondary: #1B333D;
+  --secondary-foreground: #CFE7DF;
+  --muted: #1B333D;
+  --muted-foreground: #93A9B4;
+  --accent: #16352F;
+  --accent-foreground: #CFE7DF;
+  --destructive: #E55353;
+  --border: #233C46;
+  --input: #2A4550;
+  --ring: #20B58A;
+  --chart-1: #20B58A;
+  --chart-2: #5BD0A9;
+  --chart-3: #F2A93B;
+  --chart-4: #3985D6;
+  --chart-5: #8B5CF6;
+  --sidebar: #0B2823;
+  --sidebar-foreground: #CFE7DF;
+  --sidebar-primary: #20B58A;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #0E3B33;
+  --sidebar-accent-foreground: #FFFFFF;
+  --sidebar-border: rgba(255, 255, 255, 0.12);
+  --sidebar-ring: #20B58A;
+  --success: #1FB874;
+  --warning: #F2A93B;
+  --danger: #E55353;
+  --info: #4C97E5;
+  --violet-brand: #8B5CF6;
+  --teal-brand: #20B58A;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "cv11", "ss01";
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #C4D2DB;
+    border-radius: 8px;
+  }
+  .dark ::-webkit-scrollbar-thumb {
+    background: #2A4550;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}
+
+/* Karta brand */
+.brand-card {
+  @apply bg-card text-card-foreground rounded-xl border shadow-sm;
+}
+
+/* Sidebar dekoratif daun */
+.sidebar-leaf {
+  position: absolute;
+  opacity: 0.09;
+  pointer-events: none;
+}
+
+/* Scroll area maksimal */
+.max-scroll {
+  max-height: 24rem;
+  overflow-y: auto;
+}
+
+/* update */
